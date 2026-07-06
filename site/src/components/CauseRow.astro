@@ -1,0 +1,19 @@
+---
+import { platformLabel, statusLabel, titleOf } from "../../../scripts/lib/data.mjs";
+import { withBase } from "../lib/urls.js";
+
+const { cause, lang } = Astro.props;
+const affectsLabel = lang === "zh" ? "影响版本" : "Affects";
+const verifiedLabel = lang === "zh" ? "验证于" : "Verified";
+const platforms = (cause.platforms ?? []).map(platformLabel).join(" / ");
+---
+<a class="cause-row" href={withBase(`/${lang}/causes/${cause.id}/`)}>
+  <span class="row-title">{titleOf(cause, lang)}</span>
+  <span class="row-meta">
+    <span class={`status status-${cause.status}`}>{statusLabel(cause.status, lang)}</span>
+    {platforms && <span class="mono">{platforms}</span>}
+    <span>{affectsLabel} <span class="mono">{cause.affects_versions}</span></span>
+    {cause.known_offenders?.length ? <span class="mono">{cause.known_offenders.join(", ")}</span> : null}
+    <span>{verifiedLabel} <span class="mono">{cause.last_verified}</span></span>
+  </span>
+</a>

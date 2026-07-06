@@ -1,0 +1,14 @@
+id: windows-non-ascii-text-garbled
+title_en: "Windows PowerShell tool calls show mojibake for UTF-8 files"
+title_zh: "Windows PowerShell 工具调用读取 UTF-8 文件出现乱码"
+surfaces: [cli, app]
+search_keywords:
+  - "codex windows mojibake"
+  - "codex powershell utf-8"
+  - "codex Get-Content encoding"
+  - "codex Chinese garbled"
+  - "codex UTF-8 without BOM"
+  - "codex 乱码"
+  - "PowerShell 5.1 乱码"
+cause_ids:
+  - windows-powershell-utf8-mojibake

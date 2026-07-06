@@ -1,0 +1,16 @@
+id: apply-patch-fails-or-not-found
+title_en: "apply_patch fails, is not found, or fails at the sandbox layer"
+title_zh: "apply_patch 找不到、调用失败或在沙箱层失败"
+surfaces: [cli]
+search_keywords:
+  - "apply_patch command not found"
+  - "applypatch command not found"
+  - "apply-patch command not found"
+  - "Failed to apply patch"
+  - "patch tool failed at the sandbox layer"
+  - "bwrap Operation not permitted"
+  - "codex apply_patch 失败"
+  - "apply_patch not found"
+cause_ids:
+  - apply-patch-shell-command-not-found
+  - ubuntu-bwrap-apply-patch-sandbox

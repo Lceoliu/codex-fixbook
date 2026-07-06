@@ -1,0 +1,38 @@
+id: windows-powershell-utf8-mojibake
+title_en: "Windows PowerShell 5.1 decodes UTF-8 files through the system ANSI code page"
+title_zh: "Windows PowerShell 5.1 按系统 ANSI 代码页解码 UTF-8 文件"
+status: active
+platforms: [windows]
+affects_versions: "Windows PowerShell 5.1 shell wrapper; reports through 2026-06"
+fixed_in: null
+known_offenders:
+  - powershell.exe 5.1
+  - Get-Content
+  - Select-String
+  - UTF-8 without BOM
+diagnosis_zh: |
+  适用于 Windows 非英文系统中，Codex 读取包含中文、日文、韩文、土耳其文等非 ASCII 内容的 UTF-8 文件后，工具输出或最终回答出现乱码、错字、漏字，甚至补丁匹配失败的情况。
+
+  用 `Format-Hex` 或编辑器确认文件本身是 UTF-8，再比较 Codex 通过 PowerShell `Get-Content` 或 `Select-String` 看到的内容。如果裸 `Get-Content` 输出乱码，而 `Get-Content -Encoding UTF8` 正常，说明是 PowerShell 5.1 默认编码路径导致。
+workaround_zh: |
+  优先把 Codex 使用的 shell 改为 PowerShell 7 `pwsh`，或在每条 PowerShell 命令中显式指定 UTF-8，例如 `Get-Content -Encoding UTF8`、`Set-Content -Encoding UTF8`。
+
+  如果必须走 Windows PowerShell 5.1，可在可生效的 PowerShell profile 里设置 Console 输入输出编码、`$OutputEncoding`，并给 `Get-Content`、`Set-Content`、`Add-Content`、`Out-File` 设置默认 `-Encoding utf8`。但注意某些 Codex/IDE 路径会使用 `-NoProfile`，这时 profile workaround 不会生效，必须在命令内显式写编码。
+diagnosis_en: |
+  Use this entry on non-English Windows systems when Codex reads UTF-8 files containing non-ASCII text and the tool output or final answer shows mojibake, missing characters, wrong characters, or patch mismatches.
+
+  Confirm the file bytes are valid UTF-8 with `Format-Hex` or an editor, then compare what Codex sees through PowerShell `Get-Content` or `Select-String`. If plain `Get-Content` is garbled but `Get-Content -Encoding UTF8` is correct, the failure is the Windows PowerShell 5.1 default-encoding path.
+workaround_en: |
+  Prefer PowerShell 7 `pwsh` as the shell Codex uses, or make every PowerShell read/write command explicit about UTF-8, such as `Get-Content -Encoding UTF8` and `Set-Content -Encoding UTF8`.
+
+  If Windows PowerShell 5.1 must be used, set Console input/output encoding, `$OutputEncoding`, and default UTF-8 encoding for `Get-Content`, `Set-Content`, `Add-Content`, and `Out-File` in a profile that actually loads. Some Codex/IDE paths use `-NoProfile`, so the robust workaround is to specify encoding inside the command itself.
+sources:
+  - https://github.com/openai/codex/issues/23044
+  - https://github.com/openai/codex/issues/29085
+  - https://github.com/openai/codex/issues/7290
+verified_by:
+  - openai/codex#23044
+  - openai/codex#29085
+  - openai/codex#7290
+last_verified: "2026-07-06"
+last_verified_codex_version: "source reports through 2026-06; exact Codex version varies"

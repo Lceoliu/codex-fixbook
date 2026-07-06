@@ -1,0 +1,14 @@
+id: cli-login-headless-auth-fails
+title_en: "Codex CLI login fails in headless or SSH environments"
+title_zh: "Codex CLI 在无图形界面或 SSH 环境中登录失败"
+surfaces: [cli]
+search_keywords:
+  - "codex login headless"
+  - "codex device code authentication"
+  - "Please contact your workspace admin to enable device code authentication"
+  - "codex login ssh"
+  - "codex login container"
+  - "codex 无头环境 登录"
+  - "device code authentication"
+cause_ids:
+  - headless-device-code-auth-disabled

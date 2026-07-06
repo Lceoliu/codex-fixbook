@@ -1,0 +1,33 @@
+id: desktop-login-callback-stale-after-cli-login
+title_en: "Codex Desktop login hangs after a recent CLI browser login, until the app is restarted"
+title_zh: "刚完成 CLI 浏览器登录后，Codex Desktop 登录卡住，重启应用后恢复"
+status: active
+platforms: [macos]
+affects_versions: "macOS Apple Silicon report from 2026-06-23; exact versions not specified"
+fixed_in: null
+known_offenders:
+  - Google federated ChatGPT account
+  - recent Codex CLI browser login
+  - localhost:1455 callback
+diagnosis_zh: |
+  适用于同一台 macOS Apple Silicon 机器上，Codex CLI 刚通过浏览器登录成功，但随后 Codex Desktop 反复打开浏览器登录并停在加载状态；浏览器历史里能看到 localhost success callback，但桌面端没有完成登录。
+
+  如果强制退出并重新打开 Codex Desktop 后，下一次登录可以完成，说明更像是桌面端本地 callback listener、认证初始化状态或刚完成 CLI 登录后的 federated session 状态卡住。
+workaround_zh: |
+  直接强制退出 Codex Desktop，重新打开应用，再重新发起登录。上游报告中，重启桌面端后同一账号登录成功。
+
+  如果问题只在 CLI 和 Desktop 连续首次登录时出现，先让两个登录流程分开进行：CLI 登录完成后关闭浏览器登录页，重启 Desktop，再登录桌面端。若重启后仍失败，应转到 token exchange 类问题继续排查。
+diagnosis_en: |
+  Use this entry on the same macOS Apple Silicon machine when Codex CLI has just completed browser login, but Codex Desktop repeatedly opens browser login and remains stuck loading. Browser history may show a localhost success callback, yet Desktop does not finish authentication.
+
+  If force-quitting and reopening Codex Desktop lets the next login complete, the likely cause is stale Desktop callback listener state, first-run auth initialization state, or federated browser-session state after the recent CLI login.
+workaround_en: |
+  Force-quit Codex Desktop, reopen it, and start login again. The upstream report says the same account completed login after restarting the Desktop app.
+
+  If this only happens when CLI and Desktop first-run logins are attempted back to back, separate the flows: finish CLI login, close the browser login tab, restart Desktop, then log in to Desktop. If restart does not help, continue with token-exchange troubleshooting.
+sources:
+  - https://github.com/openai/codex/issues/29636
+verified_by:
+  - openai/codex#29636
+last_verified: "2026-07-06"
+last_verified_codex_version: "source report did not specify exact version"

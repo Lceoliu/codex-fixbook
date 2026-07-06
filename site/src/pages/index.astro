@@ -1,0 +1,19 @@
+---
+import { withBase } from "../lib/urls.js";
+---
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${withBase("/zh/")}`} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Codex Fixbook</title>
+  </head>
+  <body>
+    <p>
+      <a href={withBase("/zh/")}>Codex Fixbook（中文）</a> ·
+      <a href={withBase("/en/")}>Codex Fixbook (English)</a>
+    </p>
+  </body>
+</html>

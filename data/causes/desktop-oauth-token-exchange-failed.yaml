@@ -1,0 +1,33 @@
+id: desktop-oauth-token-exchange-failed
+title_en: "Codex Desktop fails OAuth token exchange even though CLI login works on the same machine"
+title_zh: "同一机器上 CLI 可登录，但 Codex Desktop OAuth token exchange 失败"
+status: active
+platforms: [windows]
+affects_versions: "Codex Desktop 26.519.11010.0; Codex CLI 0.135.0 works on same machine"
+fixed_in: null
+known_offenders:
+  - token_exchange_failed
+  - localhost:1455 callback
+  - WebView2 auth flow
+diagnosis_zh: |
+  适用于 Codex Desktop 点击 `Continue with ChatGPT` 后，浏览器认证看似成功，但 Desktop 返回 `token_exchange_failed`，同时同一台 Windows 机器、同一账号、同一网络下 Codex CLI 可以正常登录。
+
+  先确认 `auth.openai.com` 可达、系统时间正确、localhost callback 正常、浏览器认证完成。如果这些都正常，而只有 Desktop 在 token exchange 阶段失败，应把它和普通 CLI 登录失败区分开处理。
+workaround_zh: |
+  先尝试重启 Codex Desktop 和 WebView2 相关进程、清理 Desktop 缓存、换 Chrome/Edge 重走登录。上游报告显示这些步骤未必能解决，但它们能排除浏览器、缓存和 WebView2 状态问题。
+
+  如果 CLI 在同一机器上始终可用而 Desktop 仍 100% 复现 `token_exchange_failed`，当前没有来源确认的稳定本地修复；保留 CLI 作为临时入口，并向上游提交 Desktop 版本、CLI 版本、Windows build、callback URL 是否到达、代理/杀软/HTTPS inspection 状态。
+diagnosis_en: |
+  Use this entry when Codex Desktop returns `token_exchange_failed` after `Continue with ChatGPT`, while Codex CLI logs in successfully on the same Windows machine, account, and network.
+
+  First confirm `auth.openai.com` is reachable, system time is correct, the localhost callback works, and browser authentication completes. If those checks pass and only Desktop fails during token exchange, treat it separately from ordinary CLI login failures.
+workaround_en: |
+  Try restarting Codex Desktop and WebView2 processes, clearing the Desktop cache, and repeating login with Chrome and Edge. The upstream report says these steps may not solve the issue, but they rule out browser, cache, and WebView2 state problems.
+
+  If CLI remains usable on the same machine while Desktop reproduces `token_exchange_failed` every time, there is no source-confirmed stable local fix yet. Use CLI as the temporary entry point and report the Desktop version, CLI version, Windows build, localhost callback behavior, proxy/security software, and HTTPS inspection state upstream.
+sources:
+  - https://github.com/openai/codex/issues/25130
+verified_by:
+  - openai/codex#25130
+last_verified: "2026-07-06"
+last_verified_codex_version: "Desktop 26.519.11010.0; CLI 0.135.0 in source report"

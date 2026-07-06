@@ -1,0 +1,14 @@
+id: cli-slow-before-first-turn
+title_en: "Codex CLI is slow or stuck before the first prompt when MCP is enabled"
+title_zh: "启用 MCP 后 Codex CLI 启动或首轮对话前卡住"
+surfaces: [cli]
+search_keywords:
+  - "codex slow startup"
+  - "codex stuck before first prompt"
+  - "codex mcp startup"
+  - "codex first turn waits"
+  - "codex slash commands unavailable"
+  - "codex 首轮卡住"
+  - "codex mcp 启动慢"
+cause_ids:
+  - mcp-startup-tool-discovery-critical-path

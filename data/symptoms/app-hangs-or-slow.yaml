@@ -1,0 +1,13 @@
+id: app-hangs-or-slow
+title_en: "Codex app \"Error starting conversation: Timeout\""
+title_zh: "Codex app 启动对话错误：超时"
+surfaces: [app]
+search_keywords:
+  - "codex timeout"
+  - "codex error starting conversation"
+  - "codex app slow"
+  - "codex 启动对话错误"
+  - "codex 创建对话超时"
+  - "codex 超时"
+cause_ids:
+  - stitch-mcp-init-blocks-app

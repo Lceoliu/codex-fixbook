@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import CauseRow from "../../../components/CauseRow.astro";
+import { loadFixbook, surfaceLabel, titleOf } from "../../../../../scripts/lib/data.mjs";
+import { withBase } from "../../../lib/urls.js";
+
+export async function getStaticPaths() {
+  const data = await loadFixbook();
+  return ["zh", "en"].flatMap((lang) => data.symptoms.map((symptom) => ({
+    params: { lang, id: symptom.id },
+    props: { symptom }
+  })));
+}
+
+const { lang } = Astro.params;
+const { symptom } = Astro.props;
+const title = `${titleOf(symptom, lang)} · Codex Fixbook`;
+const description = lang === "zh"
+  ? `症状「${symptom.title_zh}」的已知原因、诊断步骤和解决方案。`
+  : `Known causes, diagnosis steps, and workarounds for: ${symptom.title_en}.`;
+
+const t = lang === "zh"
+  ? { home: "症状索引", causes: "已知原因", causeCount: "个已知原因" }
+  : { home: "Symptom index", causes: "Known causes", causeCount: "known causes" };
+---
+<BaseLayout title={title} description={description} lang={lang}>
+  <main>
+    <nav class="breadcrumbs" aria-label={lang === "zh" ? "面包屑" : "Breadcrumb"}>
+      <a href={withBase(`/${lang}/`)}>{t.home}</a> / <span class="mono">{symptom.id}</span>
+    </nav>
+
+    <div class="page-intro">
+      <h1>{titleOf(symptom, lang)}</h1>
+      <p class="record-line">
+        {symptom.surfaces.map((surface) => <span class="mono">{surfaceLabel(surface, lang)}</span>)}
+        <span>{symptom.causes.length} {t.causeCount}</span>
+      </p>
+    </div>
+
+    <section class="surface-group">
+      <div class="surface-heading">
+        <h2>{t.causes}</h2>
+        <span>{symptom.causes.length}</span>
+      </div>
+      <div class="issue-list">
+        {symptom.causes.map((cause) => <CauseRow cause={cause} lang={lang} />)}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

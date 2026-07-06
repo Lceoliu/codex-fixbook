@@ -1,0 +1,70 @@
+name: Submit a Codex fix
+description: Share a verified Codex CLI/App symptom, cause, and workaround.
+title: "[submission] "
+labels: [submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing to Codex Fixbook. Please describe the symptom first, then the suspected cause and workaround.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - Codex app
+        - Codex CLI
+        - Both app and CLI
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Platform
+      description: Select every platform where you verified the issue.
+      multiple: true
+      options:
+        - macOS
+        - Windows
+        - WSL
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: codex-version
+    attributes:
+      label: Codex version
+      description: "Example: 0.140.0"
+      placeholder: "0.140.0"
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom / error text
+      description: Paste the exact user-visible error, timeout, or behavior.
+      placeholder: "Codex app hangs during startup..."
+    validations:
+      required: true
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: Diagnosis steps
+      description: How did you confirm this was the cause?
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Fix or workaround
+      description: What should another user do?
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Links to issues, forum posts, release notes, or repro notes.
+      placeholder: "https://..."
+    validations:
+      required: true

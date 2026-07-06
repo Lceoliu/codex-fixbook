@@ -1,0 +1,35 @@
+id: mcp-tools-list-timeout-10s
+title_en: "A MCP server answers too slowly, so tools/list times out and Codex shows zero tools"
+title_zh: "MCP server 响应过慢，导致 tools/list 超时并显示零工具"
+status: active
+platforms: [macos]
+affects_versions: "codex-cli 0.50.0; 10s tools/list timeout"
+fixed_in: null
+known_offenders:
+  - bhmcp
+  - serena
+  - task-master-ai
+diagnosis_zh: |
+  适用于日志中出现 `Failed to list tools for MCP server`、`timed out awaiting tools/list after 10s`、`aggregated 0 tools`，但直接用 curl 或独立客户端探测该 MCP server 又能响应的情况。
+
+  先查看 Codex 日志里的 server 名称和超时点，再在 Codex 外部启动同一个 MCP server，确认 initialize 与 tools/list 是否能在短时间内完成。若 server 可达但 tools/list 超过 Codex 的等待窗口，Codex 会把它当成无可用工具。
+workaround_zh: |
+  临时禁用该 MCP server，或减少它启动和 tools/list 阶段做的工作。升级 MCP server 到最新版本，清理失效认证、慢网络请求和首次启动索引任务。
+
+  如果 server 必须保留，先让它在 Codex 外部预热，或改造 server：initialize 快速返回，tools/list 只返回轻量静态工具清单，把慢操作移动到具体工具调用中。对于当前 Codex 版本无法配置的硬超时，只能通过加速 server 或暂时禁用来绕过。
+diagnosis_en: |
+  Use this entry when logs include `Failed to list tools for MCP server`, `timed out awaiting tools/list after 10s`, or `aggregated 0 tools`, while curl or another standalone client can still reach the MCP server.
+
+  Check the Codex log for the server name and timeout point. Then start the same MCP server outside Codex and verify whether initialize and tools/list complete quickly. If the server is reachable but tools/list exceeds Codex's wait window, Codex may treat it as having no available tools.
+workaround_en: |
+  Temporarily disable the MCP server, or reduce work performed during startup and tools/list. Upgrade the MCP server, refresh stale credentials, and remove slow network calls or first-run indexing from startup.
+
+  If the server must remain enabled, warm it up outside Codex or change the server so initialize returns quickly and tools/list returns a lightweight static tool list. Move slow work into the actual tool calls. If the Codex timeout is not configurable in your version, speeding up or disabling the server is the practical workaround.
+sources:
+  - https://github.com/openai/codex/issues/5770
+  - https://github.com/openai/codex/issues/2346
+verified_by:
+  - openai/codex#5770
+  - openai/codex#2346
+last_verified: "2026-07-06"
+last_verified_codex_version: "codex-cli 0.50.0 in source report"

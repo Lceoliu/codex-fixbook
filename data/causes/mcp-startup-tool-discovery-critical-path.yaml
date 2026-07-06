@@ -1,0 +1,40 @@
+id: mcp-startup-tool-discovery-critical-path
+title_en: "Optional MCP startup and tool discovery are on the CLI startup or first-turn critical path"
+title_zh: "可选 MCP 的启动和工具发现阻塞 CLI 启动或首轮对话"
+status: active
+platforms: [macos, windows, wsl, linux]
+affects_versions: "reported 2026-05; exact Codex version not specified"
+fixed_in: null
+known_offenders:
+  - slow MCP servers
+  - unreachable MCP servers
+  - unauthenticated MCP servers
+  - many stdio MCP servers
+diagnosis_zh: |
+  适用于 Codex CLI 打开后 TUI 看似还活着，但首轮提问、斜杠菜单或工具路由一直等待 MCP 初始化的情况。
+
+  先临时禁用所有第三方 MCP server，确认 Codex 是否能立刻进入可用状态。然后逐个恢复 MCP server，重点检查启动慢、需要登录、网络不可达、或一次性启动很多 stdio 进程的 server。
+
+  如果禁用某些 MCP 后首轮响应恢复，而恢复这些 MCP 后又卡住，可以按本条处理。该问题和单个 server 的 tools/list 超时相近，但这里的核心特征是“可选 MCP 被放进启动或首轮工具构建的关键路径”。
+workaround_zh: |
+  保留最小 MCP 配置启动 Codex，只启用当前任务必需的 server。对慢速、未登录或不稳定的 MCP，先从 Codex 配置中禁用，等需要时再手动启用。
+
+  对本地 stdio server，减少启动阶段的重型初始化、网络请求和并发启动数量。对远程或需要鉴权的 server，先在 Codex 外部确认认证和网络可用。若团队维护 MCP，优先让 server 快速完成 initialize，把昂贵的资源发现延迟到工具真正调用时。
+diagnosis_en: |
+  Use this entry when the Codex CLI opens but the first prompt, slash commands, or tool routing waits while MCP startup is still running.
+
+  Temporarily disable all third-party MCP servers and confirm whether Codex becomes immediately usable. Re-enable servers one by one, focusing on servers that are slow to start, unauthenticated, unreachable, or launched in large stdio batches.
+
+  If Codex recovers with those servers disabled and slows down again when they are restored, continue with this cause. This is related to per-server tools/list timeouts, but the key signal is optional MCP startup blocking startup or first-turn tool construction.
+workaround_en: |
+  Start Codex with a minimal MCP configuration and enable only the servers needed for the current task. Disable slow, unauthenticated, or flaky MCP servers in the Codex config until they are actually needed.
+
+  For local stdio servers, reduce heavy startup work, network requests, and concurrent startup pressure. For remote or authenticated servers, verify credentials and reachability outside Codex first. If you maintain the MCP server, make initialize fast and defer expensive resource discovery until a tool is called.
+sources:
+  - https://github.com/openai/codex/issues/21318
+  - https://github.com/openai/codex/issues/29321
+verified_by:
+  - openai/codex#21318
+  - openai/codex#29321
+last_verified: "2026-07-06"
+last_verified_codex_version: "source reports did not specify exact version"

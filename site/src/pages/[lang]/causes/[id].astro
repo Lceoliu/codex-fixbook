@@ -1,0 +1,137 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { bodyOf, loadFixbook, platformLabel, statusLabel, titleOf } from "../../../../../scripts/lib/data.mjs";
+import { withBase } from "../../../lib/urls.js";
+
+export async function getStaticPaths() {
+  const data = await loadFixbook();
+  return ["zh", "en"].flatMap((lang) => data.causes.map((cause) => ({
+    params: { lang, id: cause.id },
+    props: {
+      cause,
+      symptoms: data.symptoms.filter((symptom) => symptom.cause_ids.includes(cause.id))
+    }
+  })));
+}
+
+const { lang } = Astro.params;
+const { cause, symptoms } = Astro.props;
+const title = `${titleOf(cause, lang)} · Codex Fixbook`;
+const description = lang === "zh" ? cause.diagnosis_zh.split("\n")[0] : cause.diagnosis_en.split("\n")[0];
+
+const t = lang === "zh"
+  ? {
+      home: "症状索引",
+      diagnose: "如何确认",
+      fix: "解决方案与绕过",
+      linked: "关联症状",
+      record: "验证记录",
+      status: "状态",
+      platforms: "平台",
+      affects: "影响版本",
+      fixedIn: "修复版本",
+      notFixed: "尚无",
+      offenders: "已知触发项",
+      lastVerified: "最后验证",
+      verifiedOn: "验证版本",
+      verifiedBy: "验证人",
+      sources: "来源"
+    }
+  : {
+      home: "Symptom index",
+      diagnose: "How to confirm",
+      fix: "Fix / workaround",
+      linked: "Linked symptoms",
+      record: "Verification record",
+      status: "Status",
+      platforms: "Platforms",
+      affects: "Affects versions",
+      fixedIn: "Fixed in",
+      notFixed: "Not yet",
+      offenders: "Known offenders",
+      lastVerified: "Last verified",
+      verifiedOn: "Verified on",
+      verifiedBy: "Verified by",
+      sources: "Sources"
+    };
+
+function verifierLabel(entry) {
+  if (typeof entry === "string" && entry.startsWith("http")) {
+    const name = entry.split("/").filter(Boolean).at(-1);
+    return { href: entry, label: `@${name}` };
+  }
+  return { href: null, label: String(entry) };
+}
+---
+<BaseLayout title={title} description={description} lang={lang}>
+  <main>
+    <nav class="breadcrumbs" aria-label={lang === "zh" ? "面包屑" : "Breadcrumb"}>
+      <a href={withBase(`/${lang}/`)}>{t.home}</a> / <span class="mono">{cause.id}</span>
+    </nav>
+
+    <div class="page-intro">
+      <h1>{titleOf(cause, lang)}</h1>
+      <p class="record-line">
+        <span class={`status status-${cause.status}`}>{statusLabel(cause.status, lang)}</span>
+        {cause.platforms?.length ? <span class="mono">{cause.platforms.map(platformLabel).join(" / ")}</span> : null}
+        <span>{t.affects} <span class="mono">{cause.affects_versions}</span></span>
+        <span>{t.lastVerified} <span class="mono">Codex {cause.last_verified_codex_version}</span> · <span class="mono">{cause.last_verified}</span></span>
+      </p>
+    </div>
+
+    <div class="detail-grid">
+      <article>
+        <section class="detail-panel">
+          <h2>{t.diagnose}</h2>
+          <div class="prose">{bodyOf(cause, "diagnosis", lang)}</div>
+        </section>
+        <section class="detail-panel">
+          <h2>{t.fix}</h2>
+          <div class="prose">{bodyOf(cause, "workaround", lang)}</div>
+        </section>
+        <section class="detail-panel">
+          <h2>{t.linked}</h2>
+          <div class="issue-list">
+            {symptoms.map((symptom) => (
+              <a class="issue-row" href={withBase(`/${lang}/symptoms/${symptom.id}/`)}>
+                <span class="row-title">{titleOf(symptom, lang)}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      </article>
+
+      <aside class="detail-panel sidebar" aria-label={t.record}>
+        <dl>
+          <div class="kv">
+            <dt>{t.status}</dt>
+            <dd><span class={`status status-${cause.status}`}>{statusLabel(cause.status, lang)}</span></dd>
+          </div>
+          {cause.platforms?.length ? (
+            <div class="kv"><dt>{t.platforms}</dt><dd class="mono">{cause.platforms.map(platformLabel).join(", ")}</dd></div>
+          ) : null}
+          <div class="kv"><dt>{t.affects}</dt><dd class="mono">{cause.affects_versions}</dd></div>
+          <div class="kv"><dt>{t.fixedIn}</dt><dd class="mono">{cause.fixed_in ?? t.notFixed}</dd></div>
+          {cause.known_offenders?.length ? (
+            <div class="kv"><dt>{t.offenders}</dt><dd class="mono">{cause.known_offenders.join(", ")}</dd></div>
+          ) : null}
+          <div class="kv"><dt>{t.lastVerified}</dt><dd class="mono">{cause.last_verified}</dd></div>
+          <div class="kv"><dt>{t.verifiedOn}</dt><dd class="mono">Codex {cause.last_verified_codex_version}</dd></div>
+          <div class="kv">
+            <dt>{t.verifiedBy}</dt>
+            <dd>
+              {cause.verified_by.map((entry) => {
+                const { href, label } = verifierLabel(entry);
+                return href ? <><a class="mono" href={href}>{label}</a><br /></> : <><span class="mono">{label}</span><br /></>;
+              })}
+            </dd>
+          </div>
+          <div class="kv">
+            <dt>{t.sources}</dt>
+            <dd>{cause.sources.map((source) => <><a href={source}>{new URL(source).hostname}</a><br /></>)}</dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </main>
+</BaseLayout>

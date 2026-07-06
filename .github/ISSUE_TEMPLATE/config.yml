@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Codex Fixbook site
+    url: https://lceoliu.github.io/codex-fixbook/
+    about: Search existing Codex symptoms and verified workarounds before filing a new fix.
+  - name: Upstream OpenAI Codex issues
+    url: https://github.com/openai/codex/issues
+    about: Use upstream issues for product bugs that are not yet verified as a Fixbook entry.

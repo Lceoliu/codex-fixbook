@@ -1,0 +1,15 @@
+id: desktop-login-does-not-complete
+title_en: "Codex Desktop browser login never completes"
+title_zh: "Codex Desktop 浏览器登录流程无法完成"
+surfaces: [app]
+search_keywords:
+  - "Codex Desktop login hangs"
+  - "Codex Desktop OAuth token_exchange_failed"
+  - "Continue with ChatGPT token_exchange_failed"
+  - "localhost:1455 success"
+  - "Codex Desktop stuck loading login"
+  - "Codex Desktop 登录卡住"
+  - "token_exchange_failed"
+cause_ids:
+  - desktop-login-callback-stale-after-cli-login
+  - desktop-oauth-token-exchange-failed

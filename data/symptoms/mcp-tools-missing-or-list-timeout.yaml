@@ -1,0 +1,16 @@
+id: mcp-tools-missing-or-list-timeout
+title_en: "MCP tools are missing or tools/list times out"
+title_zh: "MCP 工具缺失或 tools/list 超时"
+surfaces: [cli]
+search_keywords:
+  - "Failed to list tools for MCP server"
+  - "timed out awaiting tools/list"
+  - "aggregated 0 tools"
+  - "MCP client failed to start"
+  - "request timed out"
+  - "codex mcp tools missing"
+  - "codex mcp 0 tools"
+  - "codex mcp 超时"
+cause_ids:
+  - mcp-tools-list-timeout-10s
+  - mcp-startup-tool-discovery-critical-path

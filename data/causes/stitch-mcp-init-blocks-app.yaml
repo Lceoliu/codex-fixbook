@@ -1,0 +1,35 @@
+id: stitch-mcp-init-blocks-app
+title_en: "A third-party MCP server hangs during initialization, blocking the whole app"
+title_zh: "第三方 MCP server 初始化挂起，卡死整个 app"
+status: active
+platforms: [windows]
+affects_versions: ">=0.130 <=?"
+fixed_in: null
+known_offenders:
+  - stitch
+diagnosis_zh: |
+  适用于 Codex app 无法正常创建新对话，CLI 正常使用。
+
+  排查时先临时禁用第三方 MCP server，尤其是最近新增或更新过的 server。逐个恢复 MCP 配置，观察是哪一个 server 在初始化阶段阻塞 Codex。
+
+  如果禁用某个 MCP server 后 Codex 恢复响应，并且重新启用后问题复现，可以将该 server 作为当前原因继续处理。
+workaround_zh: |
+  在 Codex 配置中临时禁用问题 MCP server，或移除该 server 的自动启动配置。
+
+  如果必须保留该工具，优先尝试升级 MCP server、降低初始化阶段的外部网络依赖，或将其改为按需启动。确认恢复后，在本条目或新的 issue 中记录平台、Codex 版本、MCP server 版本和复现步骤。
+diagnosis_en: |
+  Use this entry when the Codex app cannot create new conversations, but the CLI works normally.
+
+  Temporarily disable third-party MCP servers, especially servers that were recently added or updated. Re-enable them one by one and watch for the server that blocks Codex during initialization.
+
+  If Codex recovers after one MCP server is disabled and the issue returns when it is enabled again, continue with this cause.
+workaround_en: |
+  Temporarily disable the problematic MCP server in your Codex configuration, or remove that server from automatic startup.
+
+  If the tool must remain available, try upgrading the MCP server, reducing network work during initialization, or switching it to an on-demand workflow. Once confirmed, record the platform, Codex version, MCP server version, and reproduction notes in this entry or a new issue.
+sources:
+  - https://linux.do/t/topic/2438606/18
+verified_by:
+  - https://github.com/Lceoliu
+last_verified: "2026-07-05"
+last_verified_codex_version: "0.140.0"

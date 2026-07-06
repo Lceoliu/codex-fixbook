@@ -1,0 +1,16 @@
+id: desktop-reconnecting-five-times
+title_en: "Codex Desktop shows Reconnecting 1/5 through 5/5 before each new conversation responds"
+title_zh: "Codex Desktop 每次新对话先显示 正在重新连接 1/5 到 5/5"
+surfaces: [app]
+search_keywords:
+  - "Codex Desktop Reconnecting 5/5"
+  - "Codex app Reconnecting 1/5"
+  - "Codex app 正在重新连接 5/5"
+  - "Codex Desktop WebSocket handshake timeout"
+  - "Codex app system proxy"
+  - "Codex Desktop HTTP_PROXY"
+  - "Codex .env proxy"
+  - "Codex Desktop 代理"
+  - "Codex app 不走系统代理"
+cause_ids:
+  - desktop-proxy-env-missing-reconnecting-loop

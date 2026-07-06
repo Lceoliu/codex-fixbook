@@ -1,0 +1,36 @@
+id: apply-patch-shell-command-not-found
+title_en: "The model invoked apply_patch as a shell command, but apply_patch is a Codex virtual tool"
+title_zh: "模型把 apply_patch 当成 shell 命令执行，但它实际是 Codex 虚拟工具"
+status: active
+platforms: [macos, wsl, linux]
+affects_versions: "misdetected apply_patch shell forms; exact versions vary"
+fixed_in: null
+known_offenders:
+  - "cd repo && apply_patch <<'EOF'"
+  - applypatch
+  - apply-patch
+  - sh -lc
+diagnosis_zh: |
+  适用于日志或终端中出现 `apply_patch: command not found`、`applypatch: command not found`、`apply-patch: command not found`，尤其是模型生成了带 heredoc 的 shell 命令，比如先 `cd` 再调用 `apply_patch` 的情况。
+
+  这通常不是系统缺少某个可安装二进制。上游说明 `apply_patch` 是 Codex 运行时内部的虚拟工具；如果 Codex 的检测逻辑没有识别出这次补丁调用，就会真的交给 shell 执行，于是 shell 在 PATH 中找不到该命令。
+workaround_zh: |
+  重新让 Agent 使用真正的 `apply_patch` 工具接口，而不是在 bash/sh 命令里嵌套 `apply_patch`。避免 `applypatch`、`apply-patch` 等拼写，也避免 `cd repo && apply_patch <<EOF` 这类容易漏检的长 shell 包装。
+
+  如果当前运行环境没有暴露 apply_patch 工具，改用语言脚本或简单文件写入完成修改，并在修改后用 diff/校验命令确认结果。对自动化提示，可明确要求“不要把 apply_patch 写进 shell 命令”。
+diagnosis_en: |
+  Use this entry when logs or the terminal show `apply_patch: command not found`, `applypatch: command not found`, or `apply-patch: command not found`, especially after the model generated a heredoc shell command or called `apply_patch` after `cd`.
+
+  This usually does not mean a missing installable binary. Upstream notes that `apply_patch` is a virtual tool inside the Codex runtime. If Codex does not recognize the patch invocation, it falls back to spawning the shell literally, and the shell cannot find an `apply_patch` binary on PATH.
+workaround_en: |
+  Re-run the edit through the real `apply_patch` tool interface instead of nesting `apply_patch` inside a bash/sh command. Avoid spellings such as `applypatch` or `apply-patch`, and avoid long shell wrappers such as `cd repo && apply_patch <<EOF` that are easier to miss.
+
+  If the current runtime does not expose the apply_patch tool, use a script or direct file write as a fallback, then verify the diff. In automation prompts, explicitly instruct the agent not to put `apply_patch` inside shell commands.
+sources:
+  - https://github.com/openai/codex/issues/2235
+  - https://github.com/openai/codex/issues/2072
+verified_by:
+  - openai/codex#2235
+  - openai/codex#2072
+last_verified: "2026-07-06"
+last_verified_codex_version: "source reports did not specify exact version"

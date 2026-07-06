@@ -1,0 +1,22 @@
+{
+  "name": "codex-fixbook",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Symptom-indexed Codex CLI/App troubleshooting fixbook.",
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1",
+    "validate": "node scripts/validate-data.mjs",
+    "generate:known-issues": "node scripts/generate-known-issues.mjs",
+    "build": "npm run validate && npm run generate:known-issues && astro build",
+    "preview": "astro preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "latest",
+    "ajv": "latest",
+    "ajv-formats": "latest",
+    "astro": "latest",
+    "fast-glob": "latest",
+    "js-yaml": "latest"
+  }
+}

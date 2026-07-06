@@ -1,0 +1,35 @@
+id: headless-device-code-auth-disabled
+title_en: "Headless Codex CLI login requires device code auth, but the workspace has it disabled"
+title_zh: "无头环境 Codex CLI 登录需要 device code auth，但工作区禁用了该流程"
+status: active
+platforms: [linux, wsl]
+affects_versions: "headless SSH/container login; exact Codex version not specified"
+fixed_in: null
+known_offenders:
+  - headless SSH sessions
+  - containers without GUI browser
+  - workspaces with device code authentication disabled
+diagnosis_zh: |
+  适用于本地有浏览器的机器可以登录 Codex CLI，但同一账号在 SSH 服务器、容器或无图形界面 Linux/WSL 环境运行 `codex login` 失败，并提示 `Please contact your workspace admin to enable device code authentication` 的情况。
+
+  先确认账号和 workspace 权限本身有效：在有 GUI 的同一账号环境中登录是否成功。如果 GUI 环境成功，而无头环境只在 device code auth 阶段失败，则说明不是账号权限问题，而是当前环境只能走 workspace 未启用的设备码 OAuth 流程。
+workaround_zh: |
+  让 workspace 管理员启用 device code authentication，或改在有 GUI/浏览器的环境完成 Codex 登录。对远程开发机，优先使用管理员允许的认证路径，而不是反复重试同一个无头 `codex login`。
+
+  如果组织暂时不能启用设备码认证，把该机器标记为“认证受阻”，不要继续排查网络、模型或 CLI 安装问题；这些通常不是根因。
+diagnosis_en: |
+  Use this entry when the same account can log in on a local GUI machine, but `codex login` fails on an SSH server, container, or headless Linux/WSL environment with `Please contact your workspace admin to enable device code authentication`.
+
+  First confirm the account and workspace access are valid by logging in from a GUI environment. If GUI login works and only the headless environment fails at device-code auth, the root cause is the environment being forced onto an OAuth flow disabled by the workspace.
+workaround_en: |
+  Ask the workspace admin to enable device code authentication, or complete Codex login from a GUI/browser environment that uses an allowed flow. For remote development machines, use an authentication path approved by the workspace instead of repeatedly retrying the same headless `codex login`.
+
+  If the organization cannot enable device-code auth, classify the machine as blocked by authentication policy rather than continuing to debug network, model, or CLI installation issues.
+sources:
+  - https://github.com/openai/codex/issues/9253
+  - https://github.com/openai/codex/issues/8576
+verified_by:
+  - openai/codex#9253
+  - openai/codex#8576
+last_verified: "2026-07-06"
+last_verified_codex_version: "source reports did not specify exact version"

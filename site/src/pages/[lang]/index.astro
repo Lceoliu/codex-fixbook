@@ -1,0 +1,181 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { bySurface, buildSearchText, loadFixbook, surfaceLabel, titleOf } from "../../../../scripts/lib/data.mjs";
+import { withBase } from "../../lib/urls.js";
+import { submitFixUrl } from "../../lib/site.js";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "zh" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+const data = await loadFixbook();
+const groups = bySurface(data.symptoms);
+const symptomCount = data.symptoms.length;
+const causeCount = data.causes.length;
+const lastVerified = data.causes
+  .map((cause) => cause.last_verified)
+  .filter(Boolean)
+  .sort()
+  .at(-1);
+
+const copy = lang === "zh" ? {
+  title: "Codex Fixbook — Codex CLI / 桌面端已知问题与修复",
+  description: "按症状检索 Codex CLI 与桌面端的已知问题。每个条目记录诊断步骤、解决方案、影响的平台与版本，以及最后验证时间。",
+  lead: "按症状检索 Codex CLI 与桌面端的已知问题。每个条目记录诊断步骤、解决方案、影响的平台与版本，以及最后验证时间。",
+  search: "搜索错误原文、症状、平台或 MCP 名称",
+  statsSymptoms: "个症状",
+  statsCauses: "个已知原因",
+  statsVerified: "最近验证",
+  causeCount: "个已知原因",
+  symptomCount: "个症状",
+  noResults: "没有找到匹配条目。试试错误信息里的其他关键词。",
+  noResultsAction: "提交修复",
+  agentTitle: "在 Agent 中使用",
+  agentLead: "把这段提示词发给你的 Agent，让它按这份数据排查 Codex 问题。Agent 也可以直接读取 known-issues.json。",
+  copyPrompt: "复制提示词",
+  copied: "已复制",
+  contributeTitle: "提交修复",
+  contributeLead: "提交尚未收录的问题：在 GitHub Issue 表单里填写症状、平台、Codex 版本、诊断过程和解决方案，审核通过后合入索引。",
+  contributeAction: "打开提交表单",
+  promptText: `请把这个仓库作为 Codex Fixbook 知识库使用。如果你能安装本地 skill，请优先安装或引用 skills/codex-fixbook/SKILL.md；否则直接读取 public/known-issues.json，并在需要时读取 data/symptoms 与 data/causes 下的 YAML。
+
+当用户描述 Codex CLI 或 Codex app 卡住、超时、MCP 工具缺失、MCP 初始化异常等问题时，先按症状标题、关键词、known_offenders 和 cause 内容匹配条目，再返回：可能原因、受影响的平台与版本、诊断步骤、workaround、来源链接。
+
+不要编造 platforms、affects_versions、fixed_in 或验证结论。没有命中时，明确说明 Codex Fixbook 暂未收录，并建议用户通过 GitHub Issue Form 提交：可复现症状、平台、Codex 版本、诊断过程、解决方案和来源链接。`
+} : {
+  title: "Codex Fixbook — known Codex CLI / desktop app issues and fixes",
+  description: "Known Codex CLI and desktop app issues, indexed by symptom. Each entry records diagnosis steps, a workaround, affected platforms and versions, and when it was last verified.",
+  lead: "Known Codex CLI and desktop app issues, indexed by symptom. Each entry records diagnosis steps, a workaround, affected platforms and versions, and when it was last verified.",
+  search: "Search error text, symptoms, platforms, or MCP server names",
+  statsSymptoms: "symptoms",
+  statsCauses: "known causes",
+  statsVerified: "last verified",
+  causeCount: "known causes",
+  symptomCount: "symptoms",
+  noResults: "No matching entries. Try another keyword from the error message.",
+  noResultsAction: "Submit a fix",
+  agentTitle: "Use with an agent",
+  agentLead: "Paste this prompt into your agent to troubleshoot Codex against this dataset. Agents can also read known-issues.json directly.",
+  copyPrompt: "Copy prompt",
+  copied: "Copied",
+  contributeTitle: "Submit a fix",
+  contributeLead: "To add an issue that isn't listed yet, fill in the GitHub issue form with the symptom, platform, Codex version, diagnosis, and workaround. Entries are reviewed before merge.",
+  contributeAction: "Open the issue form",
+  promptText: `Use this repository as the Codex Fixbook knowledge base. If you can install a local skill, install or reference skills/codex-fixbook/SKILL.md first. Otherwise, read public/known-issues.json and, when needed, read the YAML files under data/symptoms and data/causes.
+
+When a user reports that Codex CLI or the Codex desktop app hangs, times out, loses MCP tools, or has MCP initialization failures, match the report against symptom titles, keywords, known_offenders, and cause content. Then return the likely cause, affected platforms and versions, diagnosis steps, workaround, and source links.
+
+Do not invent platforms, affects_versions, fixed_in, or verification status. If there is no match, say that Codex Fixbook does not have a verified entry yet and suggest submitting a GitHub Issue Form with the reproducible symptom, platform, Codex version, diagnosis, workaround, and sources.`
+};
+---
+<BaseLayout title={copy.title} description={copy.description} lang={lang}>
+  <main>
+    <div class="page-intro">
+      <h1>Codex Fixbook</h1>
+      <p class="lead">{copy.lead}</p>
+    </div>
+
+    <div class="search-area">
+      <input id="issue-search" class="search-box" type="search" placeholder={copy.search} aria-label={copy.search} autocomplete="off" />
+      <kbd class="search-key">/</kbd>
+    </div>
+    <p class="stats-line">
+      <span class="mono">{symptomCount}</span> {copy.statsSymptoms}
+      · <span class="mono">{causeCount}</span> {copy.statsCauses}
+      {lastVerified && <> · {copy.statsVerified} <span class="mono">{lastVerified}</span></>}
+    </p>
+
+    {groups.map(([surface, symptoms]) => (
+      <section class="surface-group" data-surface-group>
+        <div class="surface-heading">
+          <h2>{surfaceLabel(surface, lang)}</h2>
+          <span>{symptoms.length} {copy.symptomCount}</span>
+        </div>
+        <div class="issue-list">
+          {symptoms.map((symptom) => (
+            <a class="issue-row" href={withBase(`/${lang}/symptoms/${symptom.id}/`)} data-search={buildSearchText(symptom)}>
+              <span class="row-title">{titleOf(symptom, lang)}</span>
+              <span class="row-meta">
+                <span>{symptom.causes.length} {copy.causeCount}</span>
+                {symptom.search_keywords.slice(0, 3).map((keyword) => <span class="mono">{keyword}</span>)}
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <p id="empty-state" class="empty-state">
+      {copy.noResults} <a href={submitFixUrl}>{copy.noResultsAction}</a>
+    </p>
+
+    <div class="panel-grid">
+      <section class="panel">
+        <h2>{copy.agentTitle}</h2>
+        <p>{copy.agentLead}</p>
+        <pre><code id="agent-prompt-text">{copy.promptText}</code></pre>
+        <div class="panel-actions">
+          <button id="copy-agent-prompt" class="button" type="button" data-copied-label={copy.copied}>{copy.copyPrompt}</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>{copy.contributeTitle}</h2>
+        <p>{copy.contributeLead}</p>
+        <div class="panel-actions">
+          <a class="button" href={submitFixUrl}>{copy.contributeAction}</a>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const input = document.querySelector("#issue-search");
+    const rows = [...document.querySelectorAll(".issue-row")];
+    const groups = [...document.querySelectorAll("[data-surface-group]")];
+    const empty = document.querySelector("#empty-state");
+
+    input?.addEventListener("input", () => {
+      const query = input.value.trim().toLowerCase();
+      let visibleRows = 0;
+      for (const row of rows) {
+        const match = !query || row.dataset.search?.includes(query);
+        row.classList.toggle("hidden-by-search", !match);
+        if (match) visibleRows += 1;
+      }
+      for (const group of groups) {
+        const visibleInGroup = group.querySelectorAll(".issue-row:not(.hidden-by-search)").length;
+        group.classList.toggle("hidden-by-search", visibleInGroup === 0);
+      }
+      empty?.classList.toggle("is-visible", visibleRows === 0);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "/" && document.activeElement !== input && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const tag = document.activeElement?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        event.preventDefault();
+        input?.focus();
+      }
+      if (event.key === "Escape" && document.activeElement === input && input) {
+        input.value = "";
+        input.dispatchEvent(new Event("input"));
+        input.blur();
+      }
+    });
+
+    const copyButton = document.querySelector("#copy-agent-prompt");
+    const promptText = document.querySelector("#agent-prompt-text");
+    const originalCopyLabel = copyButton?.textContent ?? "";
+    const copiedLabel = copyButton?.dataset.copiedLabel ?? originalCopyLabel;
+
+    copyButton?.addEventListener("click", async () => {
+      const text = promptText?.textContent ?? "";
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
+      copyButton.textContent = copiedLabel;
+      window.setTimeout(() => {
+        copyButton.textContent = originalCopyLabel;
+      }, 1200);
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,63 @@
+id: desktop-proxy-env-missing-reconnecting-loop
+title_en: "Codex Desktop does not reliably inherit the system or shell proxy, causing repeated reconnects"
+title_zh: "Codex Desktop 没有稳定继承系统或 shell 代理，导致每次对话反复重连"
+status: active
+platforms: [macos, windows]
+affects_versions: "reported on Codex App 26.623.70822 / bundled CLI 0.142.4 and Codex App 0.142.1; likely version-dependent"
+fixed_in: null
+known_offenders:
+  - Finder or Dock launched macOS app
+  - Windows system proxy
+  - WebSocket transport
+  - local HTTP proxy
+  - Clash Verge
+  - proxy variables only in shell startup files
+diagnosis_zh: |
+  适用于 Codex Desktop 新建对话或第一轮请求时，界面反复显示 `正在重新连接`、`Reconnecting... 1/5` 到 `5/5`，最后才响应或直接失败；同时浏览器、终端或系统其他程序能正常走本机代理访问 ChatGPT/Codex。
+
+  先确认这是不是代理路径问题：查看 Codex 日志中是否有 WebSocket handshake timeout、`responses_retry`、`Falling back from WebSockets to HTTPS transport`、request timed out 等网络重试迹象。再确认 Codex Desktop 进程实际是否能看到 `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY`、`NO_PROXY`。macOS 从 Finder/Dock 启动的 GUI app 常常不会继承 `~/.zshrc` 里的变量；Windows 上也有 WebSocket transport 不完全尊重系统代理、但设置 `HTTP_PROXY`/`HTTPS_PROXY` 后可工作的报告。
+
+  注意区分另一个相似问题：有些 Windows 日志显示 app-server transport 已连接，但第一轮 conversation state hydration 发生 race，也会被 UI 显示成 Reconnecting。这种情况下日志重点是 `Received turn/started for unknown conversation`、`No turns for conversation`，而不是代理或 WebSocket 超时。
+workaround_zh: |
+  在 Codex 的用户级目录下创建或更新 `.env`，写入实际可用的本机代理地址，然后完全退出并重启 Codex Desktop。
+
+  默认路径通常是 macOS/Linux 的 `~/.codex/.env`，Windows 的 `%USERPROFILE%\.codex\.env`。如果你显式设置过 `CODEX_HOME`，则使用 `%CODEX_HOME%\.env` 或 `$CODEX_HOME/.env`。示例：
+
+      HTTP_PROXY=http://127.0.0.1:7897
+      HTTPS_PROXY=http://127.0.0.1:7897
+      ALL_PROXY=http://127.0.0.1:7897
+      NO_PROXY=localhost,127.0.0.1,::1
+
+  优先使用 HTTP/mixed 代理端口填 `HTTP_PROXY` 和 `HTTPS_PROXY`；如果只填 SOCKS 代理，部分 WebSocket 或 HTTP 客户端可能仍不稳定。写完后必须完全退出 Codex Desktop，而不是只关闭窗口；重启后再新建对话验证是否不再出现 1/5 到 5/5 的重连。
+
+diagnosis_en: |
+  Use this entry when Codex Desktop shows `Reconnecting... 1/5` through `5/5` on a new conversation or first turn before eventually responding or failing, while browsers, terminals, or other apps can reach ChatGPT/Codex through the local proxy.
+
+  First confirm this is a proxy-path problem: inspect Codex logs for WebSocket handshake timeouts, `responses_retry`, `Falling back from WebSockets to HTTPS transport`, or request timeouts. Then check whether the Codex Desktop process actually sees `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and `NO_PROXY`. On macOS, GUI apps launched from Finder or the Dock often do not inherit variables from `~/.zshrc`; on Windows, there are reports where WebSocket transport did not fully respect the system proxy but worked once `HTTP_PROXY` and `HTTPS_PROXY` were set.
+
+  Distinguish this from a similar Windows first-turn race: some logs show app-server transport already connected while conversation state hydration races and the UI still displays Reconnecting. That case tends to log `Received turn/started for unknown conversation` and `No turns for conversation`, not proxy or WebSocket timeouts.
+workaround_en: |
+  Create or update `.env` under the Codex user directory, write the actually working local proxy URL, then fully quit and restart Codex Desktop.
+
+  The default path is usually `~/.codex/.env` on macOS/Linux and `%USERPROFILE%\.codex\.env` on Windows. If you explicitly set `CODEX_HOME`, use `%CODEX_HOME%\.env` or `$CODEX_HOME/.env` instead. Example:
+
+      HTTP_PROXY=http://127.0.0.1:7897
+      HTTPS_PROXY=http://127.0.0.1:7897
+      ALL_PROXY=http://127.0.0.1:7897
+      NO_PROXY=localhost,127.0.0.1,::1
+
+  Prefer the HTTP or mixed proxy port for `HTTP_PROXY` and `HTTPS_PROXY`; SOCKS-only values may still be unstable for some WebSocket or HTTP clients. After saving the file, fully quit Codex Desktop rather than merely closing the window, reopen it, and verify that new conversations no longer run through reconnect attempts 1/5 to 5/5.
+sources:
+  - https://github.com/openai/codex/issues/30695
+  - https://github.com/openai/codex/issues/29958
+  - https://github.com/openai/codex/issues/15447
+  - https://github.com/openai/codex/issues/18471
+  - https://youmind.com/landing/x-viral-articles/fix-codex-desktop-reconnect-loop
+verified_by:
+  - openai/codex#30695
+  - openai/codex#29958
+  - openai/codex#15447
+  - openai/codex#18471
+  - youmind-fix-codex-desktop-reconnect-loop
+last_verified: "2026-07-07"
+last_verified_codex_version: "Codex App 26.623.70822 / bundled CLI 0.142.4; Codex App 0.142.1 in source reports"

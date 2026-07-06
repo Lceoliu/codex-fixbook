@@ -1,0 +1,34 @@
+id: ubuntu-bwrap-apply-patch-sandbox
+title_en: "apply_patch fails inside nested bubblewrap sandbox on Ubuntu 25.10"
+title_zh: "Ubuntu 25.10 上 apply_patch 在嵌套 bubblewrap 沙箱中失败"
+status: active
+platforms: [linux]
+affects_versions: "Codex CLI/App 0.120.0 on Ubuntu 25.10"
+fixed_in: null
+known_offenders:
+  - Ubuntu 25.10
+  - bubblewrap
+  - nested bwrap sandbox
+  - AppArmor restricted user namespaces
+diagnosis_zh: |
+  适用于普通 shell 写文件可以成功，但 `apply_patch` 报 `Failed to apply patch`、`The patch tool failed at the sandbox layer` 或 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted` 的 Ubuntu 25.10 环境。
+
+  先确认这不是文件权限问题：在同一仓库中用普通重定向或脚本写入临时文件是否成功。如果普通写入成功，而 apply_patch 专门在 bwrap 或 namespace 处失败，再检查是否运行在已被 bubblewrap 包裹的 Codex 进程中，以及系统是否限制 unprivileged user namespaces。
+workaround_zh: |
+  对完全可信的本地仓库，可以在 `~/.codex/config.toml` 的对应 project 配置里加入 `sandbox_mode = "none"`，上游报告中这样可绕过嵌套 bwrap 路径，使编辑恢复。
+
+  如果不能关闭沙箱，则绕过 apply_patch，使用脚本或直接写文件完成修改，然后用测试和 diff 验证。该条目只适用于可信项目；不要为了不可信代码仓库随意关闭沙箱。
+diagnosis_en: |
+  Use this entry on Ubuntu 25.10 when ordinary shell writes succeed, but `apply_patch` fails with `Failed to apply patch`, `The patch tool failed at the sandbox layer`, or `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`.
+
+  First confirm this is not a filesystem permission problem by writing a temporary file in the same repo with a normal redirect or script. If direct writes work and only apply_patch fails at bwrap or namespace setup, check whether Codex is already running inside bubblewrap and whether the system restricts unprivileged user namespaces.
+workaround_en: |
+  For a fully trusted local repo, add `sandbox_mode = "none"` to the matching project entry in `~/.codex/config.toml`. The upstream report says this bypassed the nested bwrap path and restored editing.
+
+  If the sandbox cannot be disabled, bypass apply_patch and use a script or direct file write, then verify with tests and diff. Apply this entry only to trusted projects; do not disable sandboxing for untrusted repositories just to work around this bug.
+sources:
+  - https://github.com/openai/codex/issues/17969
+verified_by:
+  - openai/codex#17969
+last_verified: "2026-07-06"
+last_verified_codex_version: "0.120.0 in source report"
