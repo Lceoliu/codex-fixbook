@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 
-const site = process.env.SITE_URL ?? "https://example.github.io/codex-fixbook";
+const site = process.env.SITE_URL ?? "https://lceoliu.github.io/codex-fixbook";
 const base = process.env.BASE_PATH ?? "/";
 
 export default defineConfig({
@@ -12,3 +12,4 @@ export default defineConfig({
   trailingSlash: "always",
   integrations: [sitemap()]
 });
+
